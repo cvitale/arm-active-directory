@@ -26,6 +26,12 @@
         "description": "The address range of the subnet created in the new VNET"
       }
     },
+    "networkSecurityGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "The subnet network security group."
+      }
+    },
     "location": {
       "type": "string",
       "metadata": {
@@ -34,6 +40,29 @@
     }
   },
   "resources": [
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2020-05-01",
+      "name": "[parameters('networkSecurityGroupName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "AllowRDP",
+            "properties": {
+              "priority": 1000,
+              "access": "Allow",
+              "direction": "Inbound",
+              "destinationPortRange": "3389",
+              "protocol": "Tcp",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    },
     {
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[parameters('virtualNetworkName')]",
@@ -49,7 +78,10 @@
           {
             "name": "[parameters('subnetName')]",
             "properties": {
-              "addressPrefix": "[parameters('subnetRange')]"
+              "addressPrefix": "[parameters('subnetRange')]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+              }
             }
           }
         ]

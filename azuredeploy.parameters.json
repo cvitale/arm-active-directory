@@ -2,26 +2,17 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "virtualMachineName": {
-      "value": "dc01"
-  },
-  "vmSize": {
-      "value": "Standard_D2s_v3"
-  },
     "adminUsername": {
-      "value": "azureadmin"
+      "value": "GEN-UNIQUE"
     },
     "adminPassword": {
-      "value": "ChangeMe123456"
+      "value": "GEN-PASSWORD"
     },
     "domainName": {
       "value": "corp.mydomain.com"
     },
     "dnsPrefix": {
-      "value": "labcontosodc01"
-    },
-    "_artifactsLocation": {
-        "value": ".\\" 
+      "value": "GEN-UNIQUE"
     }
   }
 }

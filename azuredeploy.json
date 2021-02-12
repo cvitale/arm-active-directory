@@ -4,7 +4,7 @@
     "parameters": {
         "virtualMachineName": {
             "type": "string",
-            "defaultValue": "dc01",
+            "defaultValue": "vm01",
             "metadata": {
                 "description": "Virtual machine name."
             }
@@ -61,17 +61,30 @@
         "virtualNetworkAddressRange": "10.0.0.0/16",
         "loadBalancerFrontEndIPName": "frontend",
         "backendAddressPoolName": "backend",
-        "inboundNatRulesName": "AllowRDP",
+        "inboundNatRulesName": "[concat(parameters('virtualMachineName'),'-natrule')]",
         "networkInterfaceName": "[concat(resourceGroup().name,'-',parameters('virtualMachineName'), '-nic')]",
         "privateIPAddress": "10.0.0.4",
         "subnetName": "subnet",
+        "networkSecurityGroupName": "[concat(resourceGroup().name, '-', variables('subnetName'), '-nsg')]",
         "subnetRange": "10.0.0.0/24",
         "publicIPAddressName": "[concat(resourceGroup().name,'-public-ip')]",
         "availabilitySetName": "[concat(resourceGroup().name,'-',parameters('virtualMachineName'), '-as')]",
-        "loadBalancerName": "[concat(resourceGroup().name,'-public-loadbalancer')]"
-
+        "loadBalancerName": "[concat(resourceGroup().name,'-public-loadbalancer')]",
+        "virtualMachineResourceName": "[concat(resourceGroup().name,'-',parameters('virtualMachineName'))]",
+        "storageAccountName": "[concat(uniquestring(replace(variables('virtualMachineResourceName'),'-','')), 'storage')]",
+        "storageAccountType": "Standard_LRS"
     },
     "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('storageAccountName')]",
+            "apiVersion": "2019-06-01",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "[variables('storageAccountType')]"
+            },
+            "kind": "StorageV2"
+            },
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "apiVersion": "2019-02-01",
@@ -119,6 +132,9 @@
                     },
                     "subnetRange": {
                         "value": "[variables('subnetRange')]"
+                    },
+                    "networkSecurityGroupName": {
+                        "value": "[variables('networkSecurityGroupName')]"
                     },
                     "location": {
                         "value": "[variables('location')]"
@@ -203,12 +219,13 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2019-03-01",
-            "name": "[concat(resourceGroup().name,'-',parameters('virtualMachineName'))]",
+            "name": "[variables('virtualMachineResourceName')]",
             "location": "[variables('location')]",
             "dependsOn": [
                 "[variables('networkInterfaceName')]",
                 "[variables('availabilitySetName')]",
-                "[variables('loadBalancerName')]"
+                "[variables('loadBalancerName')]",
+                "[variables('storageAccountName')]"
             ],
             "properties": {
                 "hardwareProfile": {
@@ -226,26 +243,20 @@
                     "imageReference": {
                         "publisher": "MicrosoftWindowsServer",
                         "offer": "WindowsServer",
-                        "sku": "2016-Datacenter",
+                        "sku": "2019-Datacenter",
                         "version": "latest"
                     },
                     "osDisk": {
-                        "name": "[concat(parameters('virtualMachineName'),'_OSDisk')]",
+                        "name": "[concat(variables('virtualMachineResourceName'),'_os_disk')]",
                         "caching": "ReadOnly",
-                        "createOption": "FromImage",
-                        "managedDisk": {
-                            "storageAccountType": "StandardSSD_LRS"
-                        }
+                        "createOption": "FromImage"
                     },
                     "dataDisks": [
                         {
-                            "name": "[concat(parameters('virtualMachineName'), '_DataDisk')]",
+                            "name": "[concat(variables('virtualMachineResourceName'), '_data_disk01')]",
                             "caching": "ReadWrite",
                             "createOption": "Empty",
                             "diskSizeGB": 20,
-                            "managedDisk": {
-                                "storageAccountType": "StandardSSD_LRS"
-                            },
                             "lun": 0
                         }
                     ]
@@ -265,7 +276,7 @@
                     "name": "CreateADForest",
                     "location": "[variables('location')]",
                     "dependsOn": [
-                        "[concat(resourceGroup().name,'-',parameters('virtualMachineName'))]"
+                        "[variables('virtualMachineResourceName')]"
                     ],
                     "properties": {
                         "publisher": "Microsoft.Powershell",
