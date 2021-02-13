@@ -72,7 +72,7 @@
         "availabilitySetName": "[concat(resourceGroup().name,'-',parameters('virtualMachineName'), '-as')]",
         "loadBalancerName": "[concat(resourceGroup().name,'-public-loadbalancer')]",
         "virtualMachineResourceName": "[concat(resourceGroup().name,'-',parameters('virtualMachineName'))]",
-        "storageAccountName": "[concat(replace(variables('virtualMachineResourceName'),'-',''), 'storage',uniqueString(subscription().subscriptionId))]",
+        "storageAccountName": "[concat(substring(concat(replace(resourceGroup().name,'-',''), 'storage'),0,10),uniqueString(subscription().subscriptionId))]",
         "storageAccountType": "Standard_LRS"
     },
     "resources": [
