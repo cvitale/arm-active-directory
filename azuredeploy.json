@@ -4,7 +4,7 @@
     "parameters": {
         "virtualMachineName": {
             "type": "string",
-            "defaultValue": "vm01",
+            "defaultValue": "dc01",
             "metadata": {
                 "description": "Virtual machine name."
             }
@@ -38,7 +38,8 @@
             "type": "string",
             "metadata": {
                 "description": "The DNS prefix for the public IP address used by the Load Balancer"
-            }
+            },
+            "defaultValue": "[concat(replace(resourceGroup().name,'-',''),uniqueString(subscription().subscriptionId))]"
         },
         "_artifactsLocation": {
             "type": "string",
