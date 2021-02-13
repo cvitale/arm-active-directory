@@ -114,9 +114,6 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2018-11-01",
             "name": "VNet",
-            "dependsOn": [
-                "[variables('networkSecurityGroupName')]"
-            ],
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
